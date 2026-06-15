@@ -77,7 +77,25 @@ df['EXT_SOURCES_PROD'] = df[ext_sources].prod(axis=1)
 df['EXT_SOURCES_STD'] = df[ext_sources].std(axis=1)
 df['EXT_SOURCES_STD'] = df['EXT_SOURCES_STD'].fillna(df['EXT_SOURCES_STD'].mean())
 ```
+## Giải thích các features quan trọng
 
+### EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3
+Đây là **điểm tín dụng từ nguồn bên ngoài** (External Credit Score) — được cung cấp bởi các tổ chức đánh giá tín dụng độc lập bên ngoài Home Credit. Giá trị nằm trong khoảng **0 đến 1**, càng cao càng ít rủi ro.
+
+- `EXT_SOURCE_1` — điểm từ nguồn tín dụng thứ nhất
+- `EXT_SOURCE_2` — điểm từ nguồn tín dụng thứ hai  
+- `EXT_SOURCE_3` — điểm từ nguồn tín dụng thứ ba
+
+> Đây là nhóm features **quan trọng nhất** trong model — feature importance của LightGBM cho thấy cả 3 đều nằm trong top 5, với EXT_SOURCE_2 và EXT_SOURCE_3 đứng đầu.
+
+### Các features tự tạo (Feature Engineering)
+| Feature | Công thức | Ý nghĩa |
+|---------|-----------|---------|
+| `CREDIT_INCOME_RATIO` | AMT_CREDIT / AMT_INCOME_TOTAL | Tỉ lệ khoản vay so với thu nhập — càng cao càng rủi ro |
+| `DAYS_EMPLOYED_PERCENT` | DAYS_EMPLOYED / DAYS_BIRTH | Tỉ lệ thời gian đi làm so với tuổi đời |
+| `ANNUITY_INCOME_PERCENT` | AMT_ANNUITY / AMT_INCOME_TOTAL | Tỉ lệ trả góp hàng năm so với thu nhập |
+| `PAYMENT_RATE` | AMT_ANNUITY / AMT_CREDIT | Tỉ lệ thanh toán hàng kỳ |
+| `EXT_SOURCES_MEAN` | Mean(EXT_SOURCE_1/2/3) | Điểm tín dụng trung bình từ 3 nguồn |
 ---
 
 ## Step 4: Aggregating Data from Relational Tables
