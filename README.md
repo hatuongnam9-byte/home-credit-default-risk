@@ -62,8 +62,8 @@ df['PAYMENT_RATE'] = df['AMT_ANNUITY'] / df['AMT_CREDIT']
 # Aggregate external scoring sources
 ext_sources = ['EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3']
 df['EXT_SOURCES_PROD'] = df[ext_sources].prod(axis=1)
-df['EXT_SOURCES_MEAN'] = df[ext_sources].mean(axis=1)
-df['EXT_SOURCES_STD'] = df[ext_sources].std(axis=1).fillna(df['EXT_SOURCES_STD'].mean())
+df['EXT_SOURCES_STD'] = df[ext_sources].std(axis=1)
+df['EXT_SOURCES_STD'] = df['EXT_SOURCES_STD'].fillna(df['EXT_SOURCES_STD'].mean())
 ```
 
 ---
