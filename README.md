@@ -8,7 +8,19 @@ Challenges include:
 - Optimizing memory usage when handling large datasets (several gigabytes in size).
 
 ---
+## Dataset
 
+| Thông tin | Chi tiết |
+|-----------|---------|
+| Nguồn | [Kaggle - Home Credit Default Risk](https://www.kaggle.com/c/home-credit-default-risk) |
+| File chính | application_train.csv |
+| Số dòng | 307.511 đơn vay |
+| Số features gốc | 122 features |
+| Tỉ lệ default | ~8.07% (imbalanced) |
+| Bảng phụ | bureau, previous_application, installments_payments |
+
+> Dữ liệu không được đính kèm trong repo do dung lượng lớn.  
+> Tải về từ Kaggle và đặt vào thư mục `data/`.
 ## Step 1: Importing necessary Libraries
 
 We begin by importing the required data manipulation, visualization, and modeling libraries:
