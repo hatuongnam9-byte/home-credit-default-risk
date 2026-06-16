@@ -214,7 +214,14 @@ Chỉ số đánh giá chính là **Area Under the ROC Curve (ROC-AUC)**. Sau kh
 overall_auc = roc_auc_score(y, oof_preds)
 print(f"Overall Out-of-Fold ROC-AUC: {overall_auc:.6f}")
 ```
+**📊 Nhận xét kết quả huấn luyện:**
 
+- Validation AUC dao động trong khoảng **0.7431 – 0.7724**, không có fold nào lệch bất thường → mô hình **ổn định** và **tổng quát hóa tốt** trên các tập dữ liệu khác nhau
+- Train AUC (**0.8417 – 0.8888**) cao hơn rõ rệt so với Validation AUC → cho thấy mô hình có dấu hiệu **overfitting nhẹ**, học khá tốt trên tập train nhưng giảm hiệu suất khi gặp dữ liệu mới
+- **Fold 2** đạt Validation AUC cao nhất (**0.7724**) trong khi Train AUC lại thấp nhất (**0.8417**) → đây là fold có sự cân bằng tốt nhất giữa học và tổng quát hóa
+- **Fold 4** có Validation AUC thấp nhất (**0.7431**) → có thể do phân bố dữ liệu ở fold này khó dự đoán hơn hoặc chứa nhiều trường hợp biên (edge cases)
+
+> 💡 **Kết luận:** Với AUC trung bình khoảng **~0.76**, mô hình có khả năng phân biệt khá tốt giữa khách hàng có nguy cơ vỡ nợ và không vỡ nợ (AUC = 0.5 là đoán ngẫu nhiên, AUC = 1.0 là hoàn hảo). Tuy nhiên, vẫn còn không gian để cải thiện thông qua **feature engineering** sâu hơn hoặc **tinh chỉnh siêu tham số (hyperparameter tuning)**.
 Đồng thời trực quan hóa mức độ quan trọng của các đặc trưng (feature importance) để hiểu yếu tố nào ảnh hưởng nhiều nhất đến dự đoán khả năng vỡ nợ:
 
 ```python
