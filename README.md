@@ -195,6 +195,7 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
     sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_spli
 ---
 
+
 ## Step 5: Evaluate  the Model
 
 The main evaluation metric is the **Area Under the ROC Curve (ROC-AUC)**. After cross-validation, we evaluate the overall out-of-fold validation score:
