@@ -195,6 +195,30 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
     sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_spli
 ---
 
+## 📊 Kết quả Huấn luyện Mô hình (LightGBM - 5-Fold Cross Validation)
+
+**Thông tin dữ liệu:**
+- Train shape: (10,000 × 534), Test shape: (10,000 × 534)
+- Số đặc trưng dùng để huấn luyện: **532**
+
+**Kết quả từng Fold:**
+
+| Fold | Train AUC | Validation AUC |
+|------|-----------|-----------------|
+| 1 | 0.8888 | 0.7567 |
+| 2 | 0.8417 | 0.7724 |
+| 3 | 0.8834 | 0.7652 |
+| 4 | 0.8476 | 0.7431 |
+| 5 | 0.8462 | 0.7548 |
+
+**🎯 Overall Out-of-Fold ROC-AUC: `0.7573`**
+
+**Nhận xét:**
+- Mô hình đạt **ROC-AUC ổn định khoảng 0.74–0.77** giữa các fold → không có fold nào lệch bất thường, cho thấy mô hình **tổng quát hóa tốt**, không bị overfitting nghiêm trọng
+- Train AUC (~0.84–0.89) cao hơn Validation AUC (~0.74–0.77) — khoảng cách chấp nhận được, cho thấy mô hình học được pattern nhưng vẫn còn khoảng trống để cải thiện
+- Sử dụng **5-Fold Cross Validation** giúp đánh giá mô hình khách quan hơn, tránh phụ thuộc vào 1 lần chia Train/Validation duy nhất
+
+> 💡 **Lưu ý:** Kết quả này chạy trên sample **10,000 dòng** từ dataset Kaggle gốc. Khi áp dụng trên toàn bộ dữ liệu, ROC-AUC dự kiến sẽ cải thiện đáng kể nhờ mô hình có nhiều dữ liệu để học hơn.
 
 ## Step 5: Evaluate  the Model
 
