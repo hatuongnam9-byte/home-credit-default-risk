@@ -8,7 +8,7 @@ Mục tiêu của dự án là xây dựng một pipeline học máy có khả n
 - Tối ưu hóa **bộ nhớ sử dụng** khi xử lý tập dữ liệu lớn (có thể lên tới vài GB)
 ---
 ## Dataset
-
+ 
 | Thông tin | Chi tiết |
 |-----------|---------|
 | Nguồn | [Kaggle - Home Credit Default Risk](https://www.kaggle.com/c/home-credit-default-risk) |
