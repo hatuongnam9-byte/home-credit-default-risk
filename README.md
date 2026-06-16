@@ -39,25 +39,65 @@ import seaborn as sns
 
 ---
 
-## Step 2: Loading and Cleaning the Data
+## Step 2: Làm sạch và Tổng hợp Dữ liệu (Data Cleaning & Aggregation)
 
-We load the training and testing datasets and clean anomalous features. For instance, in `DAYS_EMPLOYED`, the value `365243` represents an anomaly (approximately 1000 years of employment) and is replaced with `NaN`:
+### 1. Tải và làm sạch dữ liệu
+
+Tải tập train/test và xử lý các giá trị bất thường. Ví dụ, trong `DAYS_EMPLOYED`, giá trị `365243` (tương đương ~1000 năm làm việc) là một anomaly và được thay bằng `NaN`:
 
 ```python
 train_path = 'data/application_train.csv'
 test_path = 'data/application_test.csv'
-
 df = pd.read_csv(train_path)
 test_df = pd.read_csv(test_path)
 
-# Concatenate train and test sets for unified preprocessing
+# Gộp tập train và test để xử lý đồng nhất
 df = pd.concat([df, test_df], ignore_index=True)
 
-# Replace anomalous DAYS_EMPLOYED values
+# Thay thế giá trị bất thường trong DAYS_EMPLOYED
 df['DAYS_EMPLOYED'] = df['DAYS_EMPLOYED'].replace(365243, np.nan)
 ```
 
+### 2. Tổng hợp dữ liệu từ các bảng liên quan (Bureau Data)
+
+Để khai thác lịch sử tín dụng của khách hàng, ta nhóm và tổng hợp dữ liệu từ bảng `bureau` (CIC History) theo từng khách hàng:
+
+```python
+# Tổng hợp thông tin bureau theo SK_ID_CURR
+bureau_agg = bureau.groupby('SK_ID_CURR').agg({
+    'DAYS_CREDIT': ['min', 'max', 'mean', 'var'],
+    'DAYS_CREDIT_ENDDATE': ['min', 'max', 'mean'],
+    'AMT_CREDIT_SUM': ['max', 'mean', 'sum'],
+    'AMT_CREDIT_SUM_DEBT': ['max', 'mean', 'sum']
+})
+bureau_agg.columns = pd.Index(["BUREAU_" + e[0] + "_" + e[1].upper() for e in bureau_agg.columns.tolist()])
+
+# Gộp vào bảng chính
+df = df.join(bureau_agg, how='left', on='SK_ID_CURR')
+```
+
+## 📊 Kết quả Tiền xử lý & Gộp dữ liệu (Data Cleaning & Preprocessing)
+
+**Quy trình xử lý dữ liệu:**
+
+| Bước | Bảng dữ liệu | Kích thước sau xử lý | Bộ nhớ giảm |
+|------|-------------|----------------------|-------------|
+| 1 | Application Train/Test | (10,000, 122) / (10,000, 121) | 10.2% |
+| 2 | Bureau & Bureau Balance | (2,011, 55) | 50.4% |
+| 3 | Previous Applications | (9,734, 186) | 50.4% |
+| 4 | Installment Payments | (8,893, 26) | 50.9% |
+| **Cuối cùng** | **Dataset đã gộp** | **(20,000, 534)** | — |
+
+**Nhận xét:**
+- Dữ liệu gốc gồm **nhiều bảng riêng biệt** (application, bureau, previous applications, installments) 
+→ cần gộp lại (merge) thành 1 bảng duy nhất để đưa vào mô hình
+- Số cột tăng vượt bậc từ **122 → 534** sau khi gộp 
+→ mỗi khách hàng được bổ sung thêm thông tin lịch sử tín dụng, đơn vay trước đó, lịch sử thanh toán
+- Tối ưu kiểu dữ liệu (downcast) giúp **giảm 10–50% bộ nhớ** sử dụng, tăng tốc xử lý và huấn luyện mô hình
+
+> 💡 **Lưu ý:** Số cột tăng mạnh (534 cột) cho thấy việc **Feature Engineering** từ nhiều nguồn dữ liệu khác nhau là bước quan trọng nhất trong dự án này, ảnh hưởng trực tiếp đến chất lượng dự đoán của mô hình.
 ---
+
 
 ## Step 3: Domain-Specific Feature Engineering
 
@@ -98,22 +138,6 @@ df['EXT_SOURCES_STD'] = df['EXT_SOURCES_STD'].fillna(df['EXT_SOURCES_STD'].mean(
 | `EXT_SOURCES_MEAN` | Mean(EXT_SOURCE_1/2/3) | Điểm tín dụng trung bình từ 3 nguồn |
 ---
 
-## Step 4: Aggregating Data from Relational Tables
-
-To capture historical borrowing behavior, we group and aggregate records from secondary tables:
-
-### 1. Bureau Data (CIC History)
-```python
-# Aggregate bureau details grouped by client ID
-bureau_agg = bureau.groupby('SK_ID_CURR').agg({
-    'DAYS_CREDIT': ['min', 'max', 'mean', 'var'],
-    'DAYS_CREDIT_ENDDATE': ['min', 'max', 'mean'],
-    'AMT_CREDIT_SUM': ['max', 'mean', 'sum'],
-    'AMT_CREDIT_SUM_DEBT': ['max', 'mean', 'sum']
-})
-bureau_agg.columns = pd.Index(["BUREAU_" + e[0] + "_" + e[1].upper() for e in bureau_agg.columns.tolist()])
-df = df.join(bureau_agg, how='left', on='SK_ID_CURR')
-```
 
 ### 2. Previous Applications
 ```python
@@ -128,29 +152,8 @@ prev_agg.columns = pd.Index(["PREV_" + e[0] + "_" + e[1].upper() for e in prev_a
 df = df.join(prev_agg, how='left', on='SK_ID_CURR')
 ```
 
-## 📊 Kết quả Tiền xử lý & Gộp dữ liệu (Data Cleaning & Preprocessing)
 
-**Quy trình xử lý dữ liệu:**
-
-| Bước | Bảng dữ liệu | Kích thước sau xử lý | Bộ nhớ giảm |
-|------|-------------|----------------------|-------------|
-| 1 | Application Train/Test | (10,000, 122) / (10,000, 121) | 10.2% |
-| 2 | Bureau & Bureau Balance | (2,011, 55) | 50.4% |
-| 3 | Previous Applications | (9,734, 186) | 50.4% |
-| 4 | Installment Payments | (8,893, 26) | 50.9% |
-| **Cuối cùng** | **Dataset đã gộp** | **(20,000, 534)** | — |
-
-**Nhận xét:**
-- Dữ liệu gốc gồm **nhiều bảng riêng biệt** (application, bureau, previous applications, installments) 
-→ cần gộp lại (merge) thành 1 bảng duy nhất để đưa vào mô hình
-- Số cột tăng vượt bậc từ **122 → 534** sau khi gộp 
-→ mỗi khách hàng được bổ sung thêm thông tin lịch sử tín dụng, đơn vay trước đó, lịch sử thanh toán
-- Tối ưu kiểu dữ liệu (downcast) giúp **giảm 10–50% bộ nhớ** sử dụng, tăng tốc xử lý và huấn luyện mô hình
-
-> 💡 **Lưu ý:** Số cột tăng mạnh (534 cột) cho thấy việc **Feature Engineering** từ nhiều nguồn dữ liệu khác nhau là bước quan trọng nhất trong dự án này, ảnh hưởng trực tiếp đến chất lượng dự đoán của mô hình.
----
-
-## Step 5: Building and Training the Model
+## Step 4: Building and Training the Model
 
 We implement a **Stratified 5-Fold Cross-Validation** loop and train a **LightGBM Classifier** using hyperparameters optimized for tabular credit data:
 
@@ -194,7 +197,7 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
 
 ---
 
-## Step 6: Evaluating the Model
+## Step 5: Evaluating the Model
 
 The main evaluation metric is the **Area Under the ROC Curve (ROC-AUC)**. After cross-validation, we evaluate the overall out-of-fold validation score:
 
