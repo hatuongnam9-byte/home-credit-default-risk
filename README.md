@@ -1,12 +1,11 @@
-# Home Credit Default Risk - ML Project
+# Dự án Học máy - Dự đoán Rủi ro Vỡ nợ Tín dụng (Home Credit Default Risk)
 
-The goal of this project is to develop a machine learning pipeline that can predict whether a loan applicant will default on their loan or experience payment difficulties. Many individuals, especially those with little or no credit history, struggle to obtain loans. Home Credit Group uses alternative data (like telecom and transactional data) to better assess repayment capabilities.
+Mục tiêu của dự án là xây dựng một pipeline học máy có khả năng dự đoán liệu người vay có **vỡ nợ** hoặc **gặp khó khăn trong việc thanh toán khoản vay** hay không. Nhiều cá nhân, đặc biệt là những người có ít hoặc không có lịch sử tín dụng, thường gặp khó khăn khi tiếp cận các khoản vay. Home Credit Group sử dụng các nguồn dữ liệu thay thế (như dữ liệu viễn thông và giao dịch) để đánh giá tốt hơn khả năng trả nợ của khách hàng.
 
-Challenges include:
-- Handling highly imbalanced datasets where default cases are only ~8% of total applications.
-- Processing and aggregating data from multiple relational tables (`bureau`, `previous_application`, `installments_payments`).
-- Optimizing memory usage when handling large datasets (several gigabytes in size).
-
+**Những thách thức chính:**
+- Xử lý bộ dữ liệu **mất cân bằng nghiêm trọng**, khi số trường hợp vỡ nợ chỉ chiếm khoảng **~8%** tổng số đơn vay
+- Xử lý và tổng hợp dữ liệu từ **nhiều bảng quan hệ** khác nhau (`bureau`, `previous_application`, `installments_payments`)
+- Tối ưu hóa **bộ nhớ sử dụng** khi xử lý tập dữ liệu lớn (có thể lên tới vài GB)
 ---
 ## Dataset
 
@@ -21,9 +20,9 @@ Challenges include:
 
 > Dữ liệu không được đính kèm trong repo do dung lượng lớn.  
 > Tải về từ Kaggle và đặt vào thư mục `data/`.
-## Step 1: Importing necessary Libraries
+## Step 1: nhập thư viện cần thiết 
 
-We begin by importing the required data manipulation, visualization, and modeling libraries:
+Chúng ta bắt đầu bằng cách nhập các thư viện xử lý dữ liệu, trực quan hóa và mô hình hóa cần thiết:
 
 ```python
 import os
