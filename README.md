@@ -194,6 +194,17 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
     sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_splits
 ```
 
+**Kết quả từng Fold:**
+
+| Fold | Train AUC | Validation AUC |
+|------|-----------|-----------------|
+| 1 | 0.8888 | 0.7567 |
+| 2 | 0.8417 | 0.7724 |
+| 3 | 0.8834 | 0.7652 |
+| 4 | 0.8476 | 0.7431 |
+| 5 | 0.8462 | 0.7548 |
+
+**🎯 Overall Out-of-Fold ROC-AUC:** `0.7573`
 ---
 
 ## Step 5: Đánh giá Mô hình (Evaluate the Model)
