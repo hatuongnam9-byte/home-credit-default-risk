@@ -153,15 +153,14 @@ df['EXT_SOURCES_STD'] = df['EXT_SOURCES_STD'].fillna(df['EXT_SOURCES_STD'].mean(
 ---
 
 
-## Step 4: Building and Training the Model
+## Step 4: Xây dựng và Huấn luyện Mô hình (Building and Training the Model)
 
-We implement a **Stratified 5-Fold Cross-Validation** loop and train a **LightGBM Classifier** using hyperparameters optimized for tabular credit data:
+Triển khai vòng lặp **Stratified 5-Fold Cross-Validation** và huấn luyện mô hình **LightGBM Classifier** với các siêu tham số đã được tối ưu cho dữ liệu tín dụng dạng bảng:
 
 ```python
 folds = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 oof_preds = np.zeros(train_df.shape[0])
 sub_preds = np.zeros(test_df.shape[0])
-
 features = [col for col in train_df.columns if col not in ['TARGET', 'SK_ID_CURR']]
 
 for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
@@ -183,7 +182,7 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
         verbosity=-1
     )
     
-    # Fit model with early stopping
+    # Huấn luyện mô hình với early stopping
     clf.fit(
         X_train, y_train,
         eval_set=[(X_train, y_train), (X_val, y_val)],
@@ -192,34 +191,34 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
     )
     
     oof_preds[val_idx] = clf.predict_proba(X_val, num_iteration=clf.best_iteration_)[:, 1]
-    sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_spli
+    sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_splits
+```
+
 ---
 
+## Step 5: Đánh giá Mô hình (Evaluate the Model)
 
-## Step 5: Evaluate  the Model
-
-The main evaluation metric is the **Area Under the ROC Curve (ROC-AUC)**. After cross-validation, we evaluate the overall out-of-fold validation score:
+Chỉ số đánh giá chính là **Area Under the ROC Curve (ROC-AUC)**. Sau khi cross-validation, đánh giá điểm số tổng thể trên tập out-of-fold:
 
 ```python
 overall_auc = roc_auc_score(y, oof_preds)
 print(f"Overall Out-of-Fold ROC-AUC: {overall_auc:.6f}")
 ```
 
-We also visualize the relative importance of features to understand what factors drive credit default prediction:
+Đồng thời trực quan hóa mức độ quan trọng của các đặc trưng (feature importance) để hiểu yếu tố nào ảnh hưởng nhiều nhất đến dự đoán khả năng vỡ nợ:
 
 ```python
-# Get feature importance dataframe
+# Tạo dataframe chứa độ quan trọng của đặc trưng
 importance_df = pd.DataFrame()
 importance_df["feature"] = features
 importance_df["importance"] = clf.feature_importances_
 
-# Plot top 40 features
+# Vẽ top 40 đặc trưng quan trọng nhất
 cols = importance_df.groupby("feature").mean().sort_values(by="importance", ascending=False)[:40].index
 sns.barplot(x="importance", y="feature", data=importance_df[importance_df.feature.isin(cols)])
 plt.title('LightGBM Features (avg over folds)')
 plt.show()
 ```
-
 ---
 
 ## 🏃 Getting Started & How to Run
