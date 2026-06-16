@@ -192,9 +192,7 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
     )
     
     oof_preds[val_idx] = clf.predict_proba(X_val, num_iteration=clf.best_iteration_)[:, 1]
-    sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_splits
-```
-
+    sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_spli
 ---
 
 ## Step 5: Evaluating the Model
