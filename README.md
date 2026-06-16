@@ -57,26 +57,6 @@ df = pd.concat([df, test_df], ignore_index=True)
 df['DAYS_EMPLOYED'] = df['DAYS_EMPLOYED'].replace(365243, np.nan)
 ```
 
-## 📊 Kết quả Tiền xử lý & Gộp dữ liệu (Data Cleaning & Preprocessing)
-
-**Quy trình xử lý dữ liệu:**
-
-| Bước | Bảng dữ liệu | Kích thước sau xử lý | Bộ nhớ giảm |
-|------|-------------|----------------------|-------------|
-| 1 | Application Train/Test | (10,000, 122) / (10,000, 121) | 10.2% |
-| 2 | Bureau & Bureau Balance | (2,011, 55) | 50.4% |
-| 3 | Previous Applications | (9,734, 186) | 50.4% |
-| 4 | Installment Payments | (8,893, 26) | 50.9% |
-| **Cuối cùng** | **Dataset đã gộp** | **(20,000, 534)** | — |
-
-**Nhận xét:**
-- Dữ liệu gốc gồm **nhiều bảng riêng biệt** (application, bureau, previous applications, installments) 
-→ cần gộp lại (merge) thành 1 bảng duy nhất để đưa vào mô hình
-- Số cột tăng vượt bậc từ **122 → 534** sau khi gộp 
-→ mỗi khách hàng được bổ sung thêm thông tin lịch sử tín dụng, đơn vay trước đó, lịch sử thanh toán
-- Tối ưu kiểu dữ liệu (downcast) giúp **giảm 10–50% bộ nhớ** sử dụng, tăng tốc xử lý và huấn luyện mô hình
-
-> 💡 **Lưu ý:** Số cột tăng mạnh (534 cột) cho thấy việc **Feature Engineering** từ nhiều nguồn dữ liệu khác nhau là bước quan trọng nhất trong dự án này, ảnh hưởng trực tiếp đến chất lượng dự đoán của mô hình.
 ---
 
 ## Step 3: Domain-Specific Feature Engineering
@@ -148,6 +128,26 @@ prev_agg.columns = pd.Index(["PREV_" + e[0] + "_" + e[1].upper() for e in prev_a
 df = df.join(prev_agg, how='left', on='SK_ID_CURR')
 ```
 
+## 📊 Kết quả Tiền xử lý & Gộp dữ liệu (Data Cleaning & Preprocessing)
+
+**Quy trình xử lý dữ liệu:**
+
+| Bước | Bảng dữ liệu | Kích thước sau xử lý | Bộ nhớ giảm |
+|------|-------------|----------------------|-------------|
+| 1 | Application Train/Test | (10,000, 122) / (10,000, 121) | 10.2% |
+| 2 | Bureau & Bureau Balance | (2,011, 55) | 50.4% |
+| 3 | Previous Applications | (9,734, 186) | 50.4% |
+| 4 | Installment Payments | (8,893, 26) | 50.9% |
+| **Cuối cùng** | **Dataset đã gộp** | **(20,000, 534)** | — |
+
+**Nhận xét:**
+- Dữ liệu gốc gồm **nhiều bảng riêng biệt** (application, bureau, previous applications, installments) 
+→ cần gộp lại (merge) thành 1 bảng duy nhất để đưa vào mô hình
+- Số cột tăng vượt bậc từ **122 → 534** sau khi gộp 
+→ mỗi khách hàng được bổ sung thêm thông tin lịch sử tín dụng, đơn vay trước đó, lịch sử thanh toán
+- Tối ưu kiểu dữ liệu (downcast) giúp **giảm 10–50% bộ nhớ** sử dụng, tăng tốc xử lý và huấn luyện mô hình
+
+> 💡 **Lưu ý:** Số cột tăng mạnh (534 cột) cho thấy việc **Feature Engineering** từ nhiều nguồn dữ liệu khác nhau là bước quan trọng nhất trong dự án này, ảnh hưởng trực tiếp đến chất lượng dự đoán của mô hình.
 ---
 
 ## Step 5: Building and Training the Model
