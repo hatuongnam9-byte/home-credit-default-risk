@@ -76,6 +76,20 @@ bureau_agg.columns = pd.Index(["BUREAU_" + e[0] + "_" + e[1].upper() for e in bu
 df = df.join(bureau_agg, how='left', on='SK_ID_CURR')
 ```
 
+### 3. Previous Applications
+```python
+# Aggregate past applications with Home Credit
+prev_agg = prev.groupby('SK_ID_CURR').agg({
+    'AMT_ANNUITY': ['min', 'max', 'mean'],
+    'AMT_APPLICATION': ['min', 'max', 'mean'],
+    'DAYS_DECISION': ['min', 'max', 'mean'],
+    'CNT_PAYMENT': ['mean', 'sum']
+})
+prev_agg.columns = pd.Index(["PREV_" + e[0] + "_" + e[1].upper() for e in prev_agg.columns.tolist()])
+df = df.join(prev_agg, how='left', on='SK_ID_CURR')
+```
+
+
 ## 📊 Kết quả Tiền xử lý & Gộp dữ liệu (Data Cleaning & Preprocessing)
 
 **Quy trình xử lý dữ liệu:**
@@ -137,20 +151,6 @@ df['EXT_SOURCES_STD'] = df['EXT_SOURCES_STD'].fillna(df['EXT_SOURCES_STD'].mean(
 | `PAYMENT_RATE` | AMT_ANNUITY / AMT_CREDIT | Tỉ lệ thanh toán hàng kỳ |
 | `EXT_SOURCES_MEAN` | Mean(EXT_SOURCE_1/2/3) | Điểm tín dụng trung bình từ 3 nguồn |
 ---
-
-
-### 2. Previous Applications
-```python
-# Aggregate past applications with Home Credit
-prev_agg = prev.groupby('SK_ID_CURR').agg({
-    'AMT_ANNUITY': ['min', 'max', 'mean'],
-    'AMT_APPLICATION': ['min', 'max', 'mean'],
-    'DAYS_DECISION': ['min', 'max', 'mean'],
-    'CNT_PAYMENT': ['mean', 'sum']
-})
-prev_agg.columns = pd.Index(["PREV_" + e[0] + "_" + e[1].upper() for e in prev_agg.columns.tolist()])
-df = df.join(prev_agg, how='left', on='SK_ID_CURR')
-```
 
 
 ## Step 4: Building and Training the Model
