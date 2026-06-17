@@ -244,18 +244,17 @@ Sau khi huấn luyện mô hình qua cross-validation, ta tính độ quan trọ
 ![Feature Importance](src/models_test/feature_importance.png)
 
 ### 📊 Nhận xét Feature Importance:
+- Ba đặc trưng dẫn đầu — **EXT_SOURCES_MEAN, EXT_SOURCE_3, PAYMENT_RATE** — có độ quan trọng vượt xa và khá ngang nhau (khoảng 150–200), tạo thành một nhóm "top tier" riêng biệt so với phần còn lại. Điều này cho thấy phần lớn khả năng dự đoán của mô hình tập trung chủ yếu vào nhóm 3 feature này.
 
-- **PAYMENT_RATE** là đặc trưng quan trọng nhất, vượt xa tất cả các feature khác (gần gấp đôi feature đứng thứ 2). Đây là feature được tính toán (tỷ lệ giữa khoản trả góp hàng tháng và tổng khoản vay), cho thấy **khả năng chi trả tương đối** của khách hàng là yếu tố dự báo rủi ro vỡ nợ mạnh nhất, mạnh hơn cả các đặc trưng gốc trong dữ liệu.
+- **EXT_SOURCES_MEAN** (giá trị trung bình của 3 điểm tín dụng ngoài) có độ quan trọng cao nhất, cao hơn cả từng EXT_SOURCE riêng lẻ. Điều này cho thấy việc **tổng hợp (aggregate)** nhiều nguồn điểm tín dụng bên ngoài mang lại tín hiệu dự báo ổn định và mạnh hơn so với dùng từng điểm số riêng lẻ.
 
-- Các điểm tín dụng ngoài (**EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3, EXT_SOURCES_MEAN**) đều nằm trong top đầu, khẳng định vai trò quan trọng của thông tin tín dụng từ bên thứ ba (credit bureau scores) trong việc đánh giá rủi ro, đúng với những gì được quan sát rộng rãi trong cộng đồng Kaggle Home Credit Default Risk.
+- Sau top 3, có một khoảng cách rõ rệt (importance giảm từ ~150-200 xuống còn ~50-80) trước khi chuyển sang nhóm feature tầm trung gồm **AMT_ANNUITY, DAYS_ID_PUBLISH, DAYS_BIRTH, DAYS_EMPLOYED, REGION_POPULATION_RELATIVE, EXT_SOURCE_1, EXT_SOURCE_2, DAYS_EMPLOYED_PERCENT, EXT_SOURCES_PROD** — đa phần là các đặc trưng nhân khẩu học, thời gian và các biến được tổng hợp từ điểm tín dụng ngoài.
 
-- **DAYS_BIRTH** (tuổi khách hàng) đứng thứ 2, cho thấy yếu tố nhân khẩu học cơ bản vẫn có giá trị dự báo cao, độc lập với các feature tài chính phức tạp hơn.
+- Các biến phân loại dạng one-hot (**NAME_EDUCATION_TYPE, NAME_FAMILY_STATUS_Married, CODE_GENDER_F, FLAG_DOCUMENT_3, NAME_CONTRACT_TYPE_Cash loans, CNT_CHILDREN**) đều có importance rất thấp (dưới 20), cho thấy từng nhãn phân loại riêng lẻ mang ít giá trị phân biệt rủi ro hơn nhiều so với các đặc trưng số liên tục hoặc được tổng hợp.
 
-- Các đặc trưng được tạo từ feature engineering trên dữ liệu lịch sử (**INSTAL_DAYS_ENTRY_PAYMENT_MAX, PREV_CNT_PAYMENT_MEAN, BUREAU_DAYS_CREDIT_ENDDATE_MAX, DAYS_EMPLOYED_PERCENT**) cũng góp mặt đáng kể trong top 15, cho thấy **hành vi thanh toán và tín dụng trong quá khứ** là nguồn thông tin bổ sung hữu ích bên cạnh điểm tín dụng ngoài.
+- Thanh lỗi (error bar) ở nhóm top 3 và một số feature như **DAYS_ID_PUBLISH** khá rộng, cho thấy có sự dao động về mức độ quan trọng giữa các fold, tuy nhiên các feature này vẫn nhất quán giữ vị trí dẫn đầu qua các fold.
 
-- Thanh lỗi (error bar) ở các feature top đầu như PAYMENT_RATE, DAYS_BIRTH tương đối hẹp so với độ lớn importance, cho thấy mức độ quan trọng của các feature này **ổn định qua các fold**, không bị lệch bất thường ở fold nào.
-
-- Nhìn chung, mô hình phụ thuộc nhiều vào các **feature được kỹ thuật hóa (engineered features)** hơn là dữ liệu thô, phản ánh hiệu quả của bước feature engineering trong pipeline.
+- Tổng thể, mô hình phụ thuộc mạnh vào nhóm điểm tín dụng ngoài (EXT_SOURCE) và khả năng chi trả (PAYMENT_RATE), trong khi các đặc trưng phân loại nhân khẩu học gốc chỉ đóng vai trò bổ trợ, đóng góp tương đối nhỏ vào quyết định của mô hình.
 
 ---
 
