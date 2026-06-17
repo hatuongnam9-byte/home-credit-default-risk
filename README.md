@@ -256,7 +256,7 @@ Sau khi huấn luyện mô hình qua cross-validation, ta tính độ quan trọ
 
 - Tổng thể, mô hình phụ thuộc mạnh vào nhóm điểm tín dụng ngoài (EXT_SOURCE) và khả năng chi trả (PAYMENT_RATE), trong khi các đặc trưng phân loại nhân khẩu học gốc chỉ đóng vai trò bổ trợ, đóng góp tương đối nhỏ vào quyết định của mô hình.
 
-##Step 7:Kết quả Submission 
+## Step 7:Kết quả Submission 
 
 Bảng dưới đây hiển thị 20 dòng đầu trong file kết quả dự đoán (tổng cộng khoảng 48.744 dòng, đúng bằng kích thước test set của cuộc thi Home Credit Default Risk).
 
