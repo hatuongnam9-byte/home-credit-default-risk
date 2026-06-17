@@ -256,6 +256,36 @@ Sau khi huấn luyện mô hình qua cross-validation, ta tính độ quan trọ
 
 - Tổng thể, mô hình phụ thuộc mạnh vào nhóm điểm tín dụng ngoài (EXT_SOURCE) và khả năng chi trả (PAYMENT_RATE), trong khi các đặc trưng phân loại nhân khẩu học gốc chỉ đóng vai trò bổ trợ, đóng góp tương đối nhỏ vào quyết định của mô hình.
 
+Step 7: Kết quả submission
+## Kết quả Submission
+
+Bảng dưới đây hiển thị 20 dòng đầu trong file kết quả dự đoán (tổng cộng khoảng 48.744 dòng, đúng bằng kích thước test set của cuộc thi Home Credit Default Risk).
+
+| SK_ID_CURR | TARGET (xác suất) |
+|------------|--------------------|
+| 100001     | 0.0275             |
+| 100005     | 0.1321             |
+| 100013     | 0.0315             |
+| 100028     | 0.0427             |
+| 100038     | 0.1771             |
+| 100042     | 0.0426             |
+| 100057     | 0.0045             |
+| 100065     | 0.0273             |
+| 100066     | 0.0128             |
+| 100067     | 0.1145             |
+| 100074     | 0.0697             |
+| 100090     | 0.0285             |
+| 100091     | 0.1549             |
+| 100092     | 0.0622             |
+| 100106     | 0.0555             |
+| 100107     | 0.1840             |
+| 100109     | 0.0582             |
+| 100117     | 0.0241             |
+| 100128     | 0.1058             |
+| 100141     | 0.0283             |
+
+*Toàn bộ kết quả đầy đủ nằm trong file [`submission.csv`](./submission.csv).*
+
 ---
 
 ## 🏃 Getting Started & How to Run
