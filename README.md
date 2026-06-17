@@ -237,6 +237,22 @@ sns.barplot(x="importance", y="feature", data=importance_df[importance_df.featur
 plt.title('LightGBM Features (avg over folds)')
 plt.show()
 ```
+![Feature Importance](src/models_test/feature_importance.png)
+
+### 📊 Nhận xét Feature Importance:
+
+- **PAYMENT_RATE** là đặc trưng quan trọng nhất, vượt xa tất cả các feature khác (gần gấp đôi feature đứng thứ 2). Đây là feature được tính toán (tỷ lệ giữa khoản trả góp hàng tháng và tổng khoản vay), cho thấy **khả năng chi trả tương đối** của khách hàng là yếu tố dự báo rủi ro vỡ nợ mạnh nhất, mạnh hơn cả các đặc trưng gốc trong dữ liệu.
+
+- Các điểm tín dụng ngoài (**EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3, EXT_SOURCES_MEAN**) đều nằm trong top đầu, khẳng định vai trò quan trọng của thông tin tín dụng từ bên thứ ba (credit bureau scores) trong việc đánh giá rủi ro, đúng với những gì được quan sát rộng rãi trong cộng đồng Kaggle Home Credit Default Risk.
+
+- **DAYS_BIRTH** (tuổi khách hàng) đứng thứ 2, cho thấy yếu tố nhân khẩu học cơ bản vẫn có giá trị dự báo cao, độc lập với các feature tài chính phức tạp hơn.
+
+- Các đặc trưng được tạo từ feature engineering trên dữ liệu lịch sử (**INSTAL_DAYS_ENTRY_PAYMENT_MAX, PREV_CNT_PAYMENT_MEAN, BUREAU_DAYS_CREDIT_ENDDATE_MAX, DAYS_EMPLOYED_PERCENT**) cũng góp mặt đáng kể trong top 15, cho thấy **hành vi thanh toán và tín dụng trong quá khứ** là nguồn thông tin bổ sung hữu ích bên cạnh điểm tín dụng ngoài.
+
+- Thanh lỗi (error bar) ở các feature top đầu như PAYMENT_RATE, DAYS_BIRTH tương đối hẹp so với độ lớn importance, cho thấy mức độ quan trọng của các feature này **ổn định qua các fold**, không bị lệch bất thường ở fold nào.
+
+- Nhìn chung, mô hình phụ thuộc nhiều vào các **feature được kỹ thuật hóa (engineered features)** hơn là dữ liệu thô, phản ánh hiệu quả của bước feature engineering trong pipeline.
+
 ---
 
 ## 🏃 Getting Started & How to Run
