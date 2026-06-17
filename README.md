@@ -205,7 +205,7 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
 
 **🎯 Overall Out-of-Fold ROC-AUC:** `0.7573`
 ---
-![ROC Curve](models_test/roc_auc_curve.png)
+![ROC Curve](src/models_test/roc_auc_curve.png)
 
 ## Step 5: Đánh giá Mô hình (Evaluate the Model)
 
