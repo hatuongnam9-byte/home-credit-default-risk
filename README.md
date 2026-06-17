@@ -237,6 +237,10 @@ sns.barplot(x="importance", y="feature", data=importance_df[importance_df.featur
 plt.title('LightGBM Features (avg over folds)')
 plt.show()
 ```
+
+## Step 6: Kết quả xác định Feature Importance và Nhận xét
+Sau khi huấn luyện mô hình qua cross-validation, ta tính độ quan trọng trung bình của từng đặc trưng (feature importance) trên tất cả các fold, nhằm xác định những yếu tố ảnh hưởng nhiều nhất đến khả năng dự đoán rủi ro vỡ nợ của mô hình.
+
 ![Feature Importance](src/models_test/feature_importance.png)
 
 ### 📊 Nhận xét Feature Importance:
