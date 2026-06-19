@@ -253,6 +253,53 @@ sns.barplot(x="importance", y="feature", data=importance_df[importance_df.featur
 plt.title('LightGBM Features (avg over folds)')
 plt.show()
 ```
+## Step 6: Kết quả xác định Feature Importance và Nhận xét
+Sau khi huấn luyện mô hình qua cross-validation, ta tính độ quan trọng trung bình của từng đặc trưng (feature importance) trên tất cả các fold, nhằm xác định những yếu tố ảnh hưởng nhiều nhất đến khả năng dự đoán rủi ro vỡ nợ của mô hình.
+
+![Feature Importance](src/models_test/feature_importance.png)
+
+### 📊 Nhận xét Feature Importance:
+- Ba đặc trưng dẫn đầu — **EXT_SOURCES_MEAN, EXT_SOURCE_3, PAYMENT_RATE** — có độ quan trọng vượt xa và khá ngang nhau (khoảng 150–200), tạo thành một nhóm "top tier" riêng biệt so với phần còn lại. Điều này cho thấy phần lớn khả năng dự đoán của mô hình tập trung chủ yếu vào nhóm 3 feature này.
+
+- **EXT_SOURCES_MEAN** (giá trị trung bình của 3 điểm tín dụng ngoài) có độ quan trọng cao nhất, cao hơn cả từng EXT_SOURCE riêng lẻ. Điều này cho thấy việc **tổng hợp (aggregate)** nhiều nguồn điểm tín dụng bên ngoài mang lại tín hiệu dự báo ổn định và mạnh hơn so với dùng từng điểm số riêng lẻ.
+
+- Sau top 3, có một khoảng cách rõ rệt (importance giảm từ ~150-200 xuống còn ~50-80) trước khi chuyển sang nhóm feature tầm trung gồm **AMT_ANNUITY, DAYS_ID_PUBLISH, DAYS_BIRTH, DAYS_EMPLOYED, REGION_POPULATION_RELATIVE, EXT_SOURCE_1, EXT_SOURCE_2, DAYS_EMPLOYED_PERCENT, EXT_SOURCES_PROD** — đa phần là các đặc trưng nhân khẩu học, thời gian và các biến được tổng hợp từ điểm tín dụng ngoài.
+
+- Các biến phân loại dạng one-hot (**NAME_EDUCATION_TYPE, NAME_FAMILY_STATUS_Married, CODE_GENDER_F, FLAG_DOCUMENT_3, NAME_CONTRACT_TYPE_Cash loans, CNT_CHILDREN**) đều có importance rất thấp (dưới 20), cho thấy từng nhãn phân loại riêng lẻ mang ít giá trị phân biệt rủi ro hơn nhiều so với các đặc trưng số liên tục hoặc được tổng hợp.
+
+- Thanh lỗi (error bar) ở nhóm top 3 và một số feature như **DAYS_ID_PUBLISH** khá rộng, cho thấy có sự dao động về mức độ quan trọng giữa các fold, tuy nhiên các feature này vẫn nhất quán giữ vị trí dẫn đầu qua các fold.
+
+- Tổng thể, mô hình phụ thuộc mạnh vào nhóm điểm tín dụng ngoài (EXT_SOURCE) và khả năng chi trả (PAYMENT_RATE), trong khi các đặc trưng phân loại nhân khẩu học gốc chỉ đóng vai trò bổ trợ, đóng góp tương đối nhỏ vào quyết định của mô hình.
+
+## Step 7:Kết quả Submission 
+
+Bảng dưới đây hiển thị 20 dòng đầu trong file kết quả dự đoán (tổng cộng khoảng 48.744 dòng, đúng bằng kích thước test set của cuộc thi Home Credit Default Risk).
+
+| SK_ID_CURR | TARGET (xác suất) |
+|------------|--------------------|
+| 100001     | 0.0275             |
+| 100005     | 0.1321             |
+| 100013     | 0.0315             |
+| 100028     | 0.0427             |
+| 100038     | 0.1771             |
+| 100042     | 0.0426             |
+| 100057     | 0.0045             |
+| 100065     | 0.0273             |
+| 100066     | 0.0128             |
+| 100067     | 0.1145             |
+| 100074     | 0.0697             |
+| 100090     | 0.0285             |
+| 100091     | 0.1549             |
+| 100092     | 0.0622             |
+| 100106     | 0.0555             |
+| 100107     | 0.1840             |
+| 100109     | 0.0582             |
+| 100117     | 0.0241             |
+| 100128     | 0.1058             |
+| 100141     | 0.0283             |
+
+*Toàn bộ kết quả đầy đủ nằm trong file [`submission.csv`](./submission.csv).*
+
 ---
 
 ## 🏃 Getting Started & How to Run
