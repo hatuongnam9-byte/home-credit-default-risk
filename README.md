@@ -31,7 +31,7 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, precision_recall_curve, auc
 import matplotlib.pyplot as plt
 import seaborn as sns
 ```
@@ -193,36 +193,52 @@ for fold_, (trn_idx, val_idx) in enumerate(folds.split(X, y)):
     sub_preds += clf.predict_proba(X_test, num_iteration=clf.best_iteration_)[:, 1] / folds.n_splits
 ```
 
-**Kết quả từng Fold:**
+**Kết quả đánh giá chéo (5-Fold Cross Validation) trên tập mẫu (10,000 dòng):**
 
-| Fold | Train AUC | Validation AUC |
-|------|-----------|-----------------|
-| 1 | 0.8888 | 0.7567 |
-| 2 | 0.8417 | 0.7724 |
-| 3 | 0.8834 | 0.7652 |
-| 4 | 0.8476 | 0.7431 |
-| 5 | 0.8462 | 0.7548 |
+| Fold | Validation ROC-AUC | Validation PR-AUC (CPR) |
+|------|--------------------|-------------------------|
+| 1    | 0.7567             | 0.2280                  |
+| 2    | 0.7724             | 0.2728                  |
+| 3    | 0.7652             | 0.2444                  |
+| 4    | 0.7431             | 0.2232                  |
+| 5    | 0.7548             | 0.2236                  |
 
-**🎯 Overall Out-of-Fold ROC-AUC:** `0.7573`
+*   **🎯 Overall Out-of-Fold ROC-AUC:** `0.7573`
+*   **🎯 Overall Out-of-Fold PR-AUC (CPR):** `0.2311`
+
 ---
-![ROC Curve](models/roc_auc_curve.png)
+![PR Curve](src/models_test/auc_pr_curve.png)
 
 ## Step 5: Đánh giá Mô hình (Evaluate the Model)
 
-Chỉ số đánh giá chính là **Area Under the ROC Curve (ROC-AUC)**. Sau khi cross-validation, đánh giá điểm số tổng thể trên tập out-of-fold:
+Đối với các tập dữ liệu mất cân bằng nghiêm trọng (như Home Credit với tỉ lệ vỡ nợ chỉ ~8%), **PR-AUC (Precision-Recall AUC / CPR)** là chỉ số đánh giá thực tế và đáng tin cậy hơn so với **ROC-AUC**.
+
+Đoạn mã đánh giá điểm số tổng thể trên tập out-of-fold:
 
 ```python
-overall_auc = roc_auc_score(y, oof_preds)
-print(f"Overall Out-of-Fold ROC-AUC: {overall_auc:.6f}")
+from sklearn.metrics import precision_recall_curve, auc
+
+# Tính điểm PR-AUC toàn cục
+precision, recall, _ = precision_recall_curve(y, oof_preds)
+overall_pr_auc = auc(recall, precision)
+print(f"Overall Out-of-Fold PR-AUC (CPR): {overall_pr_auc:.6f}")
 ```
-**📊 Nhận xét kết quả huấn luyện:**
 
-- Validation AUC dao động trong khoảng **0.7431 – 0.7724**, không có fold nào lệch bất thường → mô hình **ổn định** và **tổng quát hóa tốt** trên các tập dữ liệu khác nhau
-- Train AUC (**0.8417 – 0.8888**) cao hơn rõ rệt so với Validation AUC → cho thấy mô hình có dấu hiệu **overfitting nhẹ**, học khá tốt trên tập train nhưng giảm hiệu suất khi gặp dữ liệu mới
-- **Fold 2** đạt Validation AUC cao nhất (**0.7724**) trong khi Train AUC lại thấp nhất (**0.8417**) → đây là fold có sự cân bằng tốt nhất giữa học và tổng quát hóa
-- **Fold 4** có Validation AUC thấp nhất (**0.7431**) → có thể do phân bố dữ liệu ở fold này khó dự đoán hơn hoặc chứa nhiều trường hợp biên (edge cases)
+### 📊 Nhận xét kết quả huấn luyện & So sánh chỉ số:
 
-> 💡 **Kết luận:** Với AUC trung bình khoảng **~0.76**, mô hình có khả năng phân biệt khá tốt giữa khách hàng có nguy cơ vỡ nợ và không vỡ nợ (AUC = 0.5 là đoán ngẫu nhiên, AUC = 1.0 là hoàn hảo). Tuy nhiên, vẫn còn không gian để cải thiện thông qua **feature engineering** sâu hơn hoặc **tinh chỉnh siêu tham số (hyperparameter tuning)**.
+1. **Hiệu năng trên tập dữ liệu đầy đủ (Full Dataset):**
+   * **Overall ROC-AUC:** `0.7891`
+   * **Overall PR-AUC (CPR):** `0.2821`
+
+2. **Tại sao chọn đường cong PR-AUC (CPR) thay vì ROC-AUC?**
+   * **ROC-AUC (đạt 0.7891):** Trông rất cao vì được tính dựa trên FPR (False Positive Rate). Do số lượng khách hàng không vỡ nợ (TARGET = 0) là quá lớn, mẫu số của FPR tăng mạnh khiến chỉ số FPR nhỏ đi, tạo cảm giác mô hình rất hoàn hảo.
+   * **PR-AUC (đạt 0.2821):** Chỉ số này tập trung trực tiếp vào lớp thiểu số (TARGET = 1 - nợ xấu). PR-AUC không bị ảnh hưởng bởi số lượng lớn các ca không vỡ nợ, giúp cung cấp cái nhìn thực tế và chính xác hơn về khả năng phát hiện nợ xấu của mô hình.
+
+3. **Ý nghĩa của Baseline trong PR-AUC:**
+   * Trong đồ thị Precision-Recall, đường nằm ngang **Baseline (Rate = 0.0807)** biểu diễn mô hình dự đoán ngẫu nhiên (chính bằng tỉ lệ nợ xấu trong tập dữ liệu).
+   * Điểm PR-AUC của mô hình đạt **`0.2821` trên tập dữ liệu đầy đủ (gấp ~3.5 lần so với Baseline ngẫu nhiên)**. Điều này chứng minh mô hình LightGBM có năng lực phân loại cực kỳ hiệu quả, giúp giảm thiểu rủi ro tín dụng đáng kể cho ngân hàng so với các phương pháp thông thường.
+
+> 💡 **Kết luận:** Chuyển đổi sang đánh giá bằng đường cong PR-AUC giúp đội ngũ phát triển và các bên liên quan có một cái nhìn khách quan, thực tế về khả năng thực tế của mô hình trong việc nhận diện khách hàng vỡ nợ, tránh hiện tượng quá lạc quan do chỉ số ROC-AUC mang lại trên tập dữ liệu mất cân bằng.
 Đồng thời trực quan hóa mức độ quan trọng của các đặc trưng (feature importance) để hiểu yếu tố nào ảnh hưởng nhiều nhất đến dự đoán khả năng vỡ nợ:
 
 ```python

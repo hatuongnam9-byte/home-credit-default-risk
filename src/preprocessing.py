@@ -105,7 +105,7 @@ def process_bureau(data_dir, num_rows=None):
         bureau = pd.read_csv(bureau_path, nrows=num_rows)
         bureau = bureau.join(bb_agg, how='left', on='SK_ID_BUREAU')
         bureau.drop(['SK_ID_BUREAU'], axis=1, inplace=True)
-        del bb, bb_agg
+        del bb, bb_agg 
         gc.collect()
     else:
         bureau = pd.read_csv(bureau_path, nrows=num_rows)
@@ -210,7 +210,7 @@ def process_previous_applications(data_dir, num_rows=None):
     del prev, approved, refused, approved_agg, refused_agg
     gc.collect()
     
-    return reduce_mem_usage(prev_agg)
+    return reduce_mem_usage(prev_agg) 
 
 # 4. Process installments_payments.csv
 def process_installments(data_dir, num_rows=None):
@@ -222,7 +222,7 @@ def process_installments(data_dir, num_rows=None):
     print("Processing installment payments...")
     ins = pd.read_csv(inst_path, nrows=num_rows)
     ins, cat_cols = one_hot_encoder(ins, nan_as_category=True)
-    
+     
     # Feature engineering: payment differences and delays
     ins['PAYMENT_PERC'] = ins['AMT_PAYMENT'] / ins['AMT_INSTALMENT']
     ins['PAYMENT_DIFF'] = ins['AMT_INSTALMENT'] - ins['AMT_PAYMENT']
@@ -295,5 +295,21 @@ def generate_features(data_dir, num_rows=None, output_path='processed_data.csv')
     gc.collect()
 
 if __name__ == '__main__':
-    # Test path or direct execution
-    generate_features('data', num_rows=10000, output_path='data/processed_sample.csv')
+    import sys
+    # Xác định đường dẫn động đến thư mục data dựa vào vị trí của file script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.abspath(os.path.join(script_dir, '..', 'data'))
+    
+    # Mặc định chạy thử nghiệm 10000 dòng, thêm tham số '--full' để xử lý toàn bộ dữ liệu
+    num_rows = 10000
+    output_file = 'processed_sample.csv'
+    
+    if len(sys.argv) > 1 and sys.argv[1] == '--full':
+        num_rows = None
+        output_file = 'processed_data.csv'
+        print("Running full preprocessing...")
+    else:
+        print("Running sample preprocessing (10,000 rows). Add '--full' to process all data.")
+        
+    output_path = os.path.join(data_dir, output_file)
+    generate_features(data_dir, num_rows=num_rows, output_path=output_path)

@@ -30,8 +30,14 @@ def train_lgb_model(data_path, output_dir='models', submission_path='submission.
     # Drop identifier columns
     features = [col for col in train_df.columns if col not in ['TARGET', 'SK_ID_CURR']]
     
-    X = train_df[features]
-    X_test = test_df[features]
+    X = train_df[features].copy()
+    X_test = test_df[features].copy()
+    
+    # Chuẩn hóa tên cột để loại bỏ các ký tự đặc biệt gây lỗi LightGBM
+    import re
+    cleaned_features = [re.sub(r'[ :,{}="\'\[\]\(\)]+', '_', col) for col in features]
+    X.columns = cleaned_features
+    X_test.columns = cleaned_features
     
     print(f"Number of features used for training: {len(features)}")
     
@@ -98,7 +104,6 @@ def train_lgb_model(data_path, output_dir='models', submission_path='submission.
             eval_names=['train', 'valid'],
             callbacks=callbacks
         )
-        
         # Predict on validation set
         oof_preds[val_idx] = clf.predict_proba(X_val, num_iteration=clf.best_iteration_)[:, 1]
         
@@ -118,25 +123,29 @@ def train_lgb_model(data_path, output_dir='models', submission_path='submission.
         clf.booster_.save_model(model_save_path)
         print(f"Saved model for fold {fold_ + 1} to {model_save_path}")
         
-        # Compute fold ROC-AUC score
+        # Compute fold ROC-AUC and PR-AUC scores
         fold_auc = roc_auc_score(y_val, oof_preds[val_idx])
-        print(f"Fold {fold_ + 1} Validation ROC-AUC: {fold_auc:.6f}")
+        from sklearn.metrics import precision_recall_curve, auc
+        prec_fold, rec_fold, _ = precision_recall_curve(y_val, oof_preds[val_idx])
+        fold_pr_auc = auc(rec_fold, prec_fold)
+        print(f"Fold {fold_ + 1} Validation ROC-AUC: {fold_auc:.6f} | PR-AUC (CPR): {fold_pr_auc:.6f}")
         
         # Clean up memory
         del X_train, y_train, X_val, y_val, clf
         gc.collect()
         
-    # Calculate global OOF ROC-AUC
+    # Calculate global OOF ROC-AUC and PR-AUC
     oof_auc = roc_auc_score(y, oof_preds)
+    from sklearn.metrics import precision_recall_curve, auc
+    precision, recall, _ = precision_recall_curve(y, oof_preds)
+    oof_pr_auc = auc(recall, precision)
     print(f"\n==========================================")
     print(f"Overall Out-of-Fold ROC-AUC: {oof_auc:.6f}")
+    print(f"Overall Out-of-Fold PR-AUC (CPR): {oof_pr_auc:.6f}")
     print(f"==========================================")
+    # ===== Lưu kết quả =====
     
-    # Save OOF predictions
-    oof_df = pd.DataFrame({'SK_ID_CURR': train_ids, 'TARGET': oof_preds})
-    oof_df.to_csv(os.path.join(output_dir, 'oof_predictions.csv'), index=False)
-    print("Saved OOF predictions to models/oof_predictions.csv")
-    
+ 
     # Create submission file if test predictions exist
     if sub_preds is not None:
         submission = pd.DataFrame({'SK_ID_CURR': test_ids, 'TARGET': sub_preds})
@@ -146,7 +155,36 @@ def train_lgb_model(data_path, output_dir='models', submission_path='submission.
     # Display and save feature importance
     display_importances(feature_importance_df, output_dir)
     
-    return oof_auc
+    # Plot and save PR-AUC Curve
+    plot_pr_curve(y, oof_preds, output_dir)
+    
+    return oof_pr_auc
+
+def plot_pr_curve(y_true, y_preds, output_dir):
+    from sklearn.metrics import precision_recall_curve, auc
+    precision, recall, _ = precision_recall_curve(y_true, y_preds)
+    pr_auc = auc(recall, precision)
+    
+    plt.figure(figsize=(8, 6))
+    plt.plot(recall, precision, color='dodgerblue', lw=2, label=f'PR curve (AUC = {pr_auc:.4f})')
+    
+    # Baseline is the fraction of positive samples (default rate)
+    baseline = np.sum(y_true) / len(y_true)
+    plt.axhline(y=baseline, color='crimson', lw=2, linestyle='--', label=f'Baseline (Rate = {baseline:.4f})')
+    
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Out-of-Fold Precision-Recall (PR) Curve')
+    plt.legend(loc="upper right")
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.tight_layout()
+    
+    plot_path = os.path.join(output_dir, 'auc_pr_curve.png')
+    plt.savefig(plot_path, dpi=150)
+    plt.close()
+    print(f"Saved PR curve plot to {plot_path}")
 
 def display_importances(feature_importance_df, output_dir):
     cols = (feature_importance_df[["feature", "importance"]]
@@ -172,4 +210,9 @@ def display_importances(feature_importance_df, output_dir):
 
 if __name__ == '__main__':
     # Test path or direct execution
-    train_lgb_model('data/processed_sample.csv', output_dir='models_test')
+    # Xác định đường dẫn động dựa trên vị trí của file script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.abspath(os.path.join(script_dir, '..', 'data', 'processed_sample.csv'))
+    output_dir = os.path.abspath(os.path.join(script_dir, '..', 'models_test'))
+    
+    train_lgb_model(data_path, output_dir=output_dir)
